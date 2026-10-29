@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111315">
+  <title>Перекуп</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background:
+        radial-gradient(ellipse at 50% 43%, #34393a 0, #202425 37%, #111415 78%),
+        #111415;
+    }
+    main {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      min-height: 320px;
+      place-items: center;
+      overflow: hidden;
+    }
+    .device {
+      position: relative;
+      width: min(100vw, 48.5vh);
+      aspect-ratio: 274 / 565;
+      flex: 0 0 auto;
+    }
+    .device > svg { display: block; width: 100%; height: 100%; }
+    .app-screen {
+      position: absolute;
+      z-index: 1;
+      top: 2.48%;
+      left: 4.74%;
+      width: 90.52%;
+      height: 95.04%;
+      overflow: hidden;
+      border-radius: 12%;
+      background: #f3f5f8;
+      color: #17212f;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    .home-screen {
+      position: relative;
+      display: flex;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      padding: 23px 10px 12px;
+      background:
+        radial-gradient(ellipse at 50% 36%, #164b9125, transparent 62%),
+        linear-gradient(180deg, #18212d, #0b1016);
+      color: white;
+    }
+    .home-screen[hidden] { display: none; }
+    .home-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0 2px 18px;
+      color: #dce5f1;
+      font-size: 9px;
+    }
+    .wallet-chip { color: #bce794; font-weight: 800; }
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 13px 10px;
+      align-content: center;
+      flex: 1;
+    }
+    .app-launcher {
+      display: grid;
+      justify-items: center;
+      gap: 5px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+    }
+    .app-icon {
+      display: grid;
+      width: 48px;
+      height: 48px;
+      aspect-ratio: 1;
+      place-items: center;
+      border-radius: 15px;
+      box-shadow: 0 5px 12px #0005;
+    }
+    .app-icon svg { display: block; width: 26px; height: 26px; flex: 0 0 26px; }
+    .app-icon.announcements { background: linear-gradient(145deg, #1689ff, #0755e8); }
+    .app-icon.camera { background: linear-gradient(145deg, #737d8d, #343b48); }
+    .app-icon.calculator { background: linear-gradient(145deg, #ffbd4a, #f07924); }
+    .app-icon.repair { background: linear-gradient(145deg, #42c98a, #138654); }
+    .app-icon.inventory { background: linear-gradient(145deg, #a384ff, #6748d6); }
+    .app-icon.favorites { background: linear-gradient(145deg, #ff8090, #d52d55); }
+    .app-label { color: #f0f3f8; font-size: 8px; font-weight: 700; }
+    .home-note { margin: 8px 0 2px; padding-right: 28px; color: #8e9bab; font-size: 7px; text-align: center; }
+    .reset-progress-button {
+      position: absolute;
+      right: 7px;
+      bottom: 5px;
+      display: grid;
+      width: 25px;
+      height: 25px;
+      place-items: center;
+      padding: 0;
+      border: 1px solid #ffffff35;
+      border-radius: 8px;
+      background: #ffffff12;
+      color: #dce5f1;
+      cursor: pointer;
+    }
+    .reset-progress-button svg { width: 15px; height: 15px; }
+    .reset-progress-button:focus-visible { outline: 3px solid #ffce55; outline-offset: 2px; }
+    .reset-confirm[hidden] { display: none; }
+    .reset-confirm {
+      position: absolute;
+      z-index: 8;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: #080d13b8;
+    }
+    .reset-dialog {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #dfe5ed;
+      border-radius: 13px;
+      background: #fff;
+      color: #17212f;
+      box-shadow: 0 8px 24px #0005;
+      text-align: center;
+    }
+    .reset-dialog-title { font-size: 12px; font-weight: 900; }
+    .reset-dialog-text { margin: 8px 0 12px; color: #647184; font-size: 9px; line-height: 1.45; }
+    .reset-dialog-actions { display: flex; justify-content: center; gap: 8px; }
+    .reset-dialog-actions .app-action { flex: 1; margin: 0; }
+    .reset-confirm-button { background: #c83d42; }
+    .app-launcher:focus-visible, .app-action:focus-visible,
+    .back-button:focus-visible, .category-button:focus-visible,
+    .calculator-key:focus-visible {
+      outline: 3px solid #ffce55;
+      outline-offset: 3px;
+    }
+    .app-view[hidden], .catalog-screen[hidden],
+    .category-screen[hidden], .product-list[hidden] { display: none; }
+    .app-view {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      background: #f3f5f8;
+      color: #17212f;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    .catalog-screen {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      background: #f3f5f8;
+    }
+    .category-screen[hidden], .product-list[hidden] { display: none; }
+    .catalog-header {
+      z-index: 1;
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 7px;
+      padding: 22px 10px 9px;
+      background: #0868f7;
+      color: white;
+    }
+    .back-button {
+      display: grid;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 auto;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 7px;
+      background: #ffffff20;
+      color: white;
+      cursor: pointer;
+      font-size: 19px;
+    }
+    .catalog-title { font-size: 13px; font-weight: 800; }
+    .catalog-subtitle { margin-top: 2px; color: #ffffffcc; font-size: 8px; }
+    .scroll-content {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 8px;
+      scrollbar-width: thin;
+    }
+    .category-grid {
+      display: grid;
+      gap: 9px;
+      align-content: start;
+      overflow-y: auto;
+      padding: 11px;
+    }
+    .category-button {
+      display: flex;
+      min-height: 67px;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 11px;
+      border: 1px solid #e6eaf0;
+      border-radius: 12px;
+      background: #fff;
+      color: #17212f;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 2px 6px #17212f0a;
+    }
+    .category-button:focus-visible {
+      outline: 3px solid #0868f7;
+      outline-offset: 2px;
+    }
+    .category-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 12px;
+      background: #edf4ff;
+      font-size: 23px;
+    }
+    .category-name { font-size: 12px; font-weight: 800; }
+    .category-hint { margin-top: 3px; color: #647184; font-size: 8px; }
+    .product-list {
+      display: grid;
+      gap: 7px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 8px;
+      scrollbar-width: thin;
+    }
+    .product-card {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr);
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid #e6eaf0;
+      border-radius: 11px;
+      background: #fff;
+      box-shadow: 0 2px 6px #17212f0a;
+    }
+    .product-details { min-width: 0; }
+    .phone-picture {
+      display: grid;
+      width: 32px;
+      height: 49px;
+      place-items: center;
+      align-self: center;
+      border: 2px solid #343a40;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #dce8f6, #a5b8d2);
+      font-size: 20px;
+    }
+    .product-name { font-size: 9px; font-weight: 800; line-height: 1.3; }
+    .product-seller, .product-condition { margin-top: 3px; color: #647184; font-size: 7px; }
+    .product-problem { margin-top: 4px; color: #b44332; font-size: 7px; font-weight: 700; line-height: 1.3; }
+    .product-price { margin-top: 4px; color: #17212f; font-size: 11px; font-weight: 900; }
+    .favorite-toggle {
+      min-height: 23px;
+      margin: 5px 5px 0 0;
+      padding: 3px 7px;
+      border: 1px solid #e8d28a;
+      border-radius: 7px;
+      background: #fff8df;
+      color: #856100;
+      cursor: pointer;
+      font: inherit;
+      font-size: 8px;
+      font-weight: 800;
+    }
+    .favorite-toggle[aria-pressed="true"] { border-color: #e6b6b6; background: #fff0ef; color: #a33b36; }
+    .favorite-toggle:focus-visible { outline: 2px solid #0868f7; outline-offset: 2px; }
+    .seller-rating { margin-top: 4px; color: #a76b00; font-size: 8px; font-weight: 800; }
+    .repair-cost { margin-top: 3px; color: #c24d37; font-size: 8px; font-weight: 700; }
+    .repair-cost.no-repair { color: #21834a; }
+    .app-action {
+      min-height: 25px;
+      margin-top: 5px;
+      padding: 4px 8px;
+      border: 0;
+      border-radius: 7px;
+      background: #0868f7;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      font-size: 8px;
+      font-weight: 800;
+    }
+    .app-action.secondary { background: #e8edf5; color: #263345; }
+    .app-action:disabled { background: #d8dee8; color: #687486; cursor: default; }
+    .page-message { padding: 16px 10px; color: #647184; font-size: 9px; line-height: 1.5; text-align: center; }
+    .camera-frame {
+      position: relative;
+      display: grid;
+      min-height: 190px;
+      flex: 1;
+      place-items: center;
+      overflow: hidden;
+      margin: 10px;
+      border-radius: 14px;
+      background: radial-gradient(ellipse at 50% 35%, #3b5064, #10151c 75%);
+      color: #eaf1fa;
+      text-align: center;
+    }
+    .camera-frame video, .camera-frame img { width: 100%; height: 100%; object-fit: cover; }
+    .camera-placeholder { padding: 18px; font-size: 10px; line-height: 1.5; }
+    .camera-controls { display: flex; justify-content: center; gap: 7px; padding: 0 8px 10px; }
+    .camera-status { min-height: 20px; padding: 2px 9px; color: #647184; font-size: 8px; text-align: center; }
+    #game-notice:not([hidden]) {
+      position: absolute;
+      z-index: 5;
+      right: 12px;
+      bottom: 15px;
+      left: 12px;
+      min-height: 0;
+      padding: 8px 10px;
+      border: 1px solid #ffffff24;
+      border-radius: 9px;
+      background: #17212fee;
+      color: #fff;
+      box-shadow: 0 4px 14px #0005;
+      font-size: 9px;
+    }
+    .calculator-panel {
+      display: flex;
+      width: min(100% - 24px, 220px);
+      flex-direction: column;
+      align-self: center;
+      gap: 8px;
+      margin: auto;
+    }
+    .calculator-display {
+      min-height: 52px;
+      padding: 12px;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #e5eaf2;
+      font-size: 22px;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    .calculator-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    .calculator-key {
+      min-height: 39px;
+      border: 0;
+      border-radius: 9px;
+      background: #fff;
+      color: #243248;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .calculator-key.operator { background: #dce9ff; color: #0755e8; }
+    .calculator-key.equals { background: #0868f7; color: white; }
+    .repair-card, .owned-card {
+      padding: 9px;
+      border: 1px solid #e6eaf0;
+      border-radius: 11px;
+      background: #fff;
+    }
+    .owned-card { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 8px; }
+    .repair-title, .owned-title { font-size: 9px; font-weight: 800; }
+    .repair-part { margin-top: 5px; color: #b44332; font-size: 8px; }
+    .repair-cost-note { margin-top: 3px; color: #647184; font-size: 7px; }
+    .details-content {
+      display: grid;
+      gap: 9px;
+      align-content: start;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 10px;
+      scrollbar-width: thin;
+    }
+    .details-card, .review-card {
+      padding: 10px;
+      border: 1px solid #e6eaf0;
+      border-radius: 11px;
+      background: #fff;
+    }
+    .details-name { font-size: 12px; font-weight: 900; line-height: 1.4; }
+    .details-price { margin-top: 7px; color: #17212f; font-size: 17px; font-weight: 950; }
+    .details-row { margin-top: 6px; color: #4c5b70; font-size: 9px; line-height: 1.45; }
+    .details-row strong { color: #17212f; }
+    .section-label { margin: 2px 0 -3px; color: #647184; font-size: 8px; font-weight: 900; letter-spacing: .5px; text-transform: uppercase; }
+    .review-quote { color: #344257; font-size: 8px; line-height: 1.5; }
+    .review-author { margin-top: 5px; color: #778398; font-size: 7px; }
+    .chat-messages { display: grid; gap: 8px; align-content: start; flex: 1; overflow-y: auto; padding: 12px 10px; }
+    .chat-bubble { max-width: 88%; padding: 8px 10px; border-radius: 12px; font-size: 9px; line-height: 1.5; }
+    .chat-bubble.seller { justify-self: start; border-bottom-left-radius: 4px; background: #fff; color: #263345; }
+    .chat-bubble.player { justify-self: end; border-bottom-right-radius: 4px; background: #dce9ff; color: #153763; }
+    .chat-controls { display: grid; gap: 5px; padding: 8px 10px 12px; border-top: 1px solid #e6eaf0; background: #fff; }
+    .chat-controls .app-action { width: 100%; min-height: 33px; margin: 0; font-size: 9px; }
+    .sale-input-label { margin-top: 9px; color: #647184; font-size: 8px; }
+    .sale-price-input {
+      width: 100%;
+      min-height: 36px;
+      margin-top: 4px;
+      padding: 7px 9px;
+      border: 1px solid #d5dce7;
+      border-radius: 8px;
+      background: #fff;
+      color: #17212f;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .sale-price-input:focus-visible { outline: 3px solid #0868f7; outline-offset: 2px; }
+    .sale-hint { margin-top: 7px; color: #647184; font-size: 8px; line-height: 1.45; }
+    .home-balance { font-variant-numeric: tabular-nums; }
+    @media (max-height: 600px) {
+      .catalog-header { padding-top: 14px; }
+      .category-grid { gap: 6px; padding: 7px; }
+      .category-button { min-height: 55px; }
+      .app-icon { width: 42px; height: 42px; }
+      .app-grid { gap: 8px; }
+      .camera-frame { min-height: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <main aria-label="Телефон с игровыми приложениями">
+    <div class="device">
+    <svg viewBox="73 92 274 565" role="img" aria-labelledby="scene-title" xmlns="http://www.w3.org/2000/svg">
+      <title id="scene-title">Телефон крупным планом с игровыми приложениями</title>
+      <defs>
+        <linearGradient id="phone" x1="0" y1="0" x2="1" y2="1">
+          <stop stop-color="#555b60"/>
+          <stop offset=".2" stop-color="#171a1d"/>
+          <stop offset=".78" stop-color="#090b0d"/>
+          <stop offset="1" stop-color="#656b70"/>
+        </linearGradient>
+        <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+          <stop stop-color="#18212d"/>
+          <stop offset=".55" stop-color="#111820"/>
+          <stop offset="1" stop-color="#0b1016"/>
+        </linearGradient>
+        <radialGradient id="screenGlow">
+          <stop stop-color="#164b91" stop-opacity=".25"/>
+          <stop offset="1" stop-color="#164b91" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="icon" x1="0" y1="0" x2="1" y2="1">
+          <stop stop-color="#1689ff"/>
+          <stop offset="1" stop-color="#0755e8"/>
+        </linearGradient>
+        <filter id="iconShadow" x="-.5" y="-.5" width="2" height="2">
+          <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity=".45"/>
+        </filter>
+      </defs>
+
+      <rect x="70" y="107" width="280" height="565" rx="42" fill="#000" opacity=".62"/>
+      <rect x="73" y="92" width="274" height="565" rx="42" fill="url(#phone)" stroke="#73797d" stroke-width="1.5"/>
+      <rect x="79" y="98" width="262" height="553" rx="37" fill="#050607"/>
+      <rect x="86" y="106" width="248" height="537" rx="30" fill="url(#screen)"/>
+      <ellipse cx="210" cy="388" rx="145" ry="180" fill="url(#screenGlow)"/>
+      <rect x="170" y="112" width="66" height="14" rx="7" fill="#050607"/>
+      <circle cx="248" cy="119" r="3" fill="#182532"/>
+
+    </svg>
+    <section class="app-screen" aria-label="Экран игрового телефона">
+      <div class="home-screen" id="home-screen">
+        <div class="home-status">
+          <span>Мой телефон</span>
+          <span class="wallet-chip">₸ <span id="home-balance">50 000</span></span>
+        </div>
+        <div class="app-grid">
+          <button class="app-launcher" type="button" data-open-app="announcements">
+            <span class="app-icon announcements" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5a1.5 1.5 0 0 1 1-1.5Z"/><path d="M14.5 4v4h4M9 12h6M9 16h6"/></svg></span><span class="app-label">Объявления</span>
+          </button>
+          <button class="app-launcher" type="button" data-open-app="camera">
+            <span class="app-icon camera" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h3l1.5-2h7l1.5 2h3A1.5 1.5 0 0 1 21.5 9v9a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Z"/><circle cx="12" cy="13" r="3.5"/></svg></span><span class="app-label">Камера</span>
+          </button>
+          <button class="app-launcher" type="button" data-open-app="calculator">
+            <span class="app-icon calculator" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 6.5h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/></svg></span><span class="app-label">Калькулятор</span>
+          </button>
+          <button class="app-launcher" type="button" data-open-app="repair">
+            <span class="app-icon repair" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.2 6.1a5 5 0 0 0-6.1 6.1l-5.3 5.3a2 2 0 0 0 2.8 2.8l5.3-5.3a5 5 0 0 0 6.1-6.1l-3 3-3.3-.7-.7-3.3 3-3Z"/></svg></span><span class="app-label">Ремонт</span>
+          </button>
+          <button class="app-launcher" type="button" data-open-app="inventory">
+            <span class="app-icon inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.2"/><path d="M10 5h4M11 18.5h2"/></svg></span><span class="app-label">Мои телефоны</span>
+          </button>
+          <button class="app-launcher" type="button" data-open-app="favorites">
+            <span class="app-icon favorites" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 20-1.4-1.3C5.6 14.2 2.5 11.4 2.5 8a5.2 5.2 0 0 1 9.5-2.9A5.2 5.2 0 0 1 21.5 8c0 3.4-3.1 6.2-8.1 10.7L12 20Z"/></svg></span><span class="app-label">Избранное</span>
+          </button>
+        </div>
+        <p class="home-note">Нажми на приложение, чтобы открыть</p>
+        <button class="reset-progress-button" id="reset-progress-open" type="button" aria-label="Сбросить прогресс" title="Сбросить прогресс">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m4 4v5m4-5v5"/></svg>
+        </button>
+      </div>
+      <section class="catalog-screen app-view" id="catalog-screen" aria-label="Объявления о продаже телефонов" hidden>
+        <header class="catalog-header">
+          <button class="back-button app-back" type="button" aria-label="Назад">‹</button>
+          <div>
+            <div class="catalog-title" id="catalog-title">Разделы</div>
+            <div class="catalog-subtitle" id="catalog-subtitle">Выбери марку · ₸ <span id="catalog-balance">50 000</span></div>
+          </div>
+        </header>
+        <div class="category-screen" id="category-screen">
+          <div class="category-grid" aria-label="Марки телефонов">
+            <button class="category-button" type="button" data-category="iphone">
+              <span class="category-icon" aria-hidden="true">🍎</span>
+              <span><span class="category-name">iPhone</span><br><span class="category-hint">Телефоны Apple</span></span>
+            </button>
+            <button class="category-button" type="button" data-category="samsung">
+              <span class="category-icon" aria-hidden="true">📱</span>
+              <span><span class="category-name">Samsung</span><br><span class="category-hint">Смартфоны Galaxy</span></span>
+            </button>
+            <button class="category-button" type="button" data-category="redmi">
+              <span class="category-icon" aria-hidden="true">📱</span>
+              <span><span class="category-name">Redmi</span><br><span class="category-hint">Телефоны Xiaomi Redmi</span></span>
+            </button>
+          </div>
+        </div>
+        <div class="product-list scroll-content" id="product-list" hidden></div>
+      </section>
+      <section class="app-view" id="favorites-screen" aria-label="Избранные телефоны" hidden>
+        <header class="catalog-header"><button class="back-button app-back" type="button" aria-label="Назад">‹</button><div><div class="catalog-title">Избранное</div><div class="catalog-subtitle">Сохранённые объявления</div></div></header>
+        <div class="scroll-content" id="favorites-list"></div>
+      </section>
+      <section class="app-view" id="details-screen" aria-label="Объявление о телефоне" hidden>
+        <header class="catalog-header"><button class="back-button app-back" type="button" aria-label="Назад">‹</button><div><div class="catalog-title" id="details-header-title">Телефон</div><div class="catalog-subtitle">Подробности объявления</div></div></header>
+        <div class="details-content" id="details-content"></div>
+      </section>
+      <section class="app-view" id="chat-screen" aria-label="Чат с продавцом" hidden>
+        <header class="catalog-header"><button class="back-button app-back" type="button" aria-label="Назад">‹</button><div><div class="catalog-title" id="chat-title">Сообщения</div><div class="catalog-subtitle">Чат с продавцом</div></div></header>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-controls" id="chat-controls"></div>
+      </section>
+      <section class="app-view" id="sale-screen" aria-label="Продажа телефона" hidden>
+        <header class="catalog-header"><button class="back-button app-back" type="button" aria-label="Назад">‹</button><div><div class="catalog-title">Новое объявление</div><div class="catalog-subtitle">Поставь свою цену</div></div></header>
+        <div class="details-content" id="sale-content"></div>
+      </section>
+      <section class="app-view" id="camera-screen" aria-label="Камера" hidden>
+        <header class="catalog-header"><button class="back-button app-back" type="button" aria-label="Назад">‹</button><div><div class="catalog-title">Камера</div><div class="catalog-subtitle">Сделай снимок</div></div></header>
+        <div class="camera-frame" id="camera-frame">
+          <div class="camera-placeholder" id="camera-placeholder">Нажми «Включить камеру» и разреши доступ к камере.</div>
+          <video id="camera-video" autoplay playsinline hidden></video>
+          <img id="camera-photo" alt="Снимок с камеры" hidden>
+        </div>
+        <div class="camera-status" id="camera-status" role="status">Камера выключена</div>
+        <div class="camera-controls"><button class="app-action" id="camera-start" type="button">Включить камеру</button><button class="app-action secondary" id="camera-take" type="button" disabled>Снимок</button></div>
+      </section>
+      <section class="app-view" id="calculator-screen" aria-label="Калькулятор" hidden>
+        <header class="catalog-header"><button class="back-button app-back" type="button" aria-label="Назад">‹</button><div><div class="catalog-title">Калькулятор</div><div class="catalog-subtitle">Считай покупку и ремонт</div></div></header>
+        <div class="calculator-panel">
+          <div class="calculator-display" id="calculator-display" aria-live="polite">0</div>
+          <div class="calculator-keys">
+            <button class="calculator-key" data-calc="clear">C</button><button class="calculator-key" data-calc="sign">±</button><button class="calculator-key" data-calc="percent">%</button><button class="calculator-key operator" data-calc="÷">÷</button>
+            <button class="calculator-key" data-calc="7">7</button><button class="calculator-key" data-calc="8">8</button><button class="calculator-key" data-calc="9">9</button><button class="calculator-key operator" data-calc="×">×</button>
+            <button class="calculator-key" data-calc="4">4</button><button class="calculator-key" data-calc="5">5</button><button class="calculator-key" data-calc="6">6</button><button class="calculator-key operator" data-calc="-">−</button>
+            <button class="calculator-key" data-calc="1">1</button><button class="calculator-key" data-calc="2">2</button><button class="calculator-key" data-calc="3">3</button><button class="calculator-key operator" data-calc="+">+</button>
+            <button class="calculator-key" data-calc="0">0</button><button class="calculator-key" data-calc=".">.</button><button class="calculator-key equals" data-calc="=" style="grid-column:span 2">=</button>
+          </div>
+        </div>
+      </section>
+      <section class="app-view" id="repair-screen" aria-label="Ремонт телефонов" hidden>
+        <header class="catalog-header"><button class="back-button app-back" type="button" aria-label="Назад">‹</button><div><div class="catalog-title">Мастерская</div><div class="catalog-subtitle">Баланс: ₸ <span class="balance-value">50 000</span></div></div></header>
+        <div class="scroll-content" id="repair-list"></div>
+      </section>
+      <section class="app-view" id="inventory-screen" aria-label="Мои телефоны" hidden>
+        <header class="catalog-header"><button class="back-button app-back" type="button" aria-label="Назад">‹</button><div><div class="catalog-title">Мои телефоны</div><div class="catalog-subtitle">Баланс: ₸ <span class="balance-value">50 000</span></div></div></header>
+        <div class="scroll-content" id="inventory-list"></div>
+      </section>
+      <div class="reset-confirm" id="reset-confirm" role="dialog" aria-modal="true" aria-labelledby="reset-dialog-title" hidden>
+        <div class="reset-dialog">
+          <div class="reset-dialog-title" id="reset-dialog-title">Сбросить прогресс?</div>
+          <p class="reset-dialog-text">Баланс и купленные телефоны будут удалены. Избранное тоже очистится.</p>
+          <div class="reset-dialog-actions">
+            <button class="app-action secondary" id="reset-progress-cancel" type="button">Нет</button>
+            <button class="app-action reset-confirm-button" id="reset-progress-confirm" type="button">Да, сбросить</button>
+          </div>
+        </div>
+      </div>
+      <div class="camera-status" id="game-notice" role="status" aria-live="polite" hidden></div>
+    </section>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const money = new Intl.NumberFormat("ru-RU");
+      const repairParts = {
+        battery: { label: "Замена аккумулятора", cost: 12000 },
+        display: { label: "Замена дисплея", cost: 28000 },
+        camera: { label: "Ремонт камеры", cost: 18000 },
+        glass: { label: "Замена защитного стекла", cost: 6000 },
+        charging: { label: "Ремонт гнезда зарядки", cost: 10000 },
+        speaker: { label: "Ремонт динамика", cost: 8000 },
+        back: { label: "Замена задней крышки", cost: 14000 }
+      };
+      const listings = [
+        { id: "ip11", brand: "iphone", model: "Apple iPhone 11, 64 ГБ", price: 42000, resalePrice: 35000, seller: "Алихан", city: "Астана", defect: null },
+        { id: "ip12", brand: "iphone", model: "Apple iPhone 12, 128 ГБ", price: 60000, resalePrice: 48000, seller: "Мадина", city: "Петропавловск", defect: { part: "speaker", cost: 8000 } },
+        { id: "ip13", brand: "iphone", model: "Apple iPhone 13, 128 ГБ", price: 110000, resalePrice: 93000, seller: "Нурсултан", city: "Алматы", defect: null },
+        { id: "ip13p", brand: "iphone", model: "Apple iPhone 13, 256 ГБ", price: 150000, resalePrice: 128000, seller: "Диана", city: "Алматы", defect: null },
+        { id: "ip14", brand: "iphone", model: "Apple iPhone 14, 128 ГБ", price: 150000, resalePrice: 128000, seller: "Тимур", city: "Алматы", defect: null },
+        { id: "samA52", brand: "samsung", model: "Samsung Galaxy A52, 8/256 ГБ", price: 65000, resalePrice: 55000, seller: "Ержан", city: "Павлодар", defect: null },
+        { id: "samA54", brand: "samsung", model: "Samsung Galaxy A54 5G, 8/256 ГБ", price: 70000, resalePrice: 60000, seller: "Аружан", city: "Алматы", defect: null },
+        { id: "samS22", brand: "samsung", model: "Samsung Galaxy S22, 256 ГБ", price: 115000, resalePrice: 98000, seller: "Руслан", city: "Темиртау", defect: null },
+        { id: "samS22u", brand: "samsung", model: "Samsung Galaxy S22 Ultra, 256 ГБ", price: 70000, resalePrice: 58000, seller: "Бекзат", city: "Атырау", defect: { part: "back", cost: 16000 } },
+        { id: "samS23", brand: "samsung", model: "Samsung Galaxy S23, 256 ГБ", price: 150000, resalePrice: 128000, seller: "София", city: "Шымкент", defect: null },
+        { id: "red12", brand: "redmi", model: "Xiaomi Redmi Note 12, 128 ГБ", price: 30000, resalePrice: 25000, seller: "Айбек", city: "Усть-Каменогорск", defect: null },
+        { id: "red12p", brand: "redmi", model: "Xiaomi Redmi Note 12 Pro, 128 ГБ", price: 45000, resalePrice: 38000, seller: "Жанель", city: "Астана", defect: null },
+        { id: "red13", brand: "redmi", model: "Xiaomi Redmi Note 13, 8/256 ГБ", price: 56000, resalePrice: 47000, seller: "Дамир", city: "Алматы", defect: null },
+        { id: "red13p", brand: "redmi", model: "Xiaomi Redmi Note 13 Pro, 256 ГБ", price: 65000, resalePrice: 55000, seller: "Алина", city: "Талдыкорган", defect: null },
+        { id: "red13pp", brand: "redmi", model: "Xiaomi Redmi Note 13 Pro+ 5G, 12/512 ГБ", price: 110000, resalePrice: 93000, seller: "Мирас", city: "Алматы", defect: null }
+      ];
+      const brandNames = { iphone: "iPhone", samsung: "Samsung", redmi: "Redmi" };
+      const views = [...document.querySelectorAll(".app-view")];
+      const notice = document.querySelector("#game-notice");
+      const homeScreen = document.querySelector("#home-screen");
+      const homeBalance = document.querySelector("#home-balance");
+      const catalogTitle = document.querySelector("#catalog-title");
+      const catalogSubtitle = document.querySelector("#catalog-subtitle");
+      const categoryScreen = document.querySelector("#category-screen");
+      const productList = document.querySelector("#product-list");
+      const detailsContent = document.querySelector("#details-content");
+      const detailsHeaderTitle = document.querySelector("#details-header-title");
+      const chatMessages = document.querySelector("#chat-messages");
+      const chatControls = document.querySelector("#chat-controls");
+      const saleContent = document.querySelector("#sale-content");
+      const inventoryList = document.querySelector("#inventory-list");
+      const repairList = document.querySelector("#repair-list");
+      const favoritesList = document.querySelector("#favorites-list");
+      const resetConfirm = document.querySelector("#reset-confirm");
+      const resetProgressOpen = document.querySelector("#reset-progress-open");
+      const resetProgressCancel = document.querySelector("#reset-progress-cancel");
+      const resetProgressConfirm = document.querySelector("#reset-progress-confirm");
+      const cameraVideo = document.querySelector("#camera-video");
+      const cameraPhoto = document.querySelector("#camera-photo");
+      const cameraPlaceholder = document.querySelector("#camera-placeholder");
+      const cameraStatus = document.querySelector("#camera-status");
+      const cameraTake = document.querySelector("#camera-take");
+      let state = { balance: 50000, owned: [], favorites: [] };
+      let activeView = "home";
+      let activeCategory = null;
+      let activeListing = null;
+      let activeListingSource = "catalog";
+      let activeSalePhoneId = null;
+      let cameraStream = null;
+      let noticeTimer = 0;
+
+      function showNotice(message) {
+        notice.hidden = false;
+        notice.textContent = message;
+        window.clearTimeout(noticeTimer);
+        noticeTimer = window.setTimeout(() => { notice.hidden = true; }, 3500);
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem("perekup-save-v3", JSON.stringify(state));
+          return true;
+        } catch (error) {
+          showNotice("Не удалось сохранить прогресс: " + error.message);
+          return false;
+        }
+      }
+
+      function formatMoney(amount) {
+        return money.format(amount) + " ₸";
+      }
+
+      function updateBalance() {
+        const formatted = money.format(state.balance);
+        homeBalance.textContent = formatted;
+        document.querySelectorAll(".balance-value").forEach((node) => { node.textContent = formatted; });
+        if (activeView === "announcements") {
+          catalogSubtitle.textContent = activeCategory
+            ? "Объявления · ₸ " + formatted
+            : "Выбери марку · ₸ " + formatted;
+        }
+      }
+
+      function addText(parent, tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        node.textContent = text;
+        parent.append(node);
+        return node;
+      }
+
+      function addButton(parent, text, action, secondary = false) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = secondary ? "app-action secondary" : "app-action";
+        button.textContent = text;
+        button.addEventListener("click", action);
+        parent.append(button);
+        return button;
+      }
+
+      function createPhoneCard(phone, owned = false, source = "catalog") {
+        const card = document.createElement("article");
+        card.className = owned ? "owned-card" : "product-card";
+        const picture = addText(card, "div", "phone-picture", "📱");
+        picture.setAttribute("aria-hidden", "true");
+        const details = addText(card, "div", owned ? "" : "product-details", "");
+        addText(details, "div", owned ? "owned-title" : "product-name", phone.model);
+        if (owned) {
+          if (phone.defect) {
+            const part = repairParts[phone.defect.part];
+            addText(details, "div", "product-problem", part.label + " · " + formatMoney(phone.defect.cost));
+            addButton(details, "Открыть ремонт", () => openApp("repair"));
+          }
+          addText(details, "div", "product-seller", "Покупка: " + formatMoney(phone.purchasePrice || phone.price));
+          addButton(details, "Выставить на продажу", () => openSale(phone.id), true);
+          return card;
+        }
+        picture.tabIndex = 0;
+        picture.setAttribute("role", "button");
+        picture.setAttribute("aria-label", "Подробнее: " + phone.model);
+        picture.addEventListener("click", () => openListing(phone, source));
+        picture.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openListing(phone, source);
+          }
+        });
+        addText(details, "div", "product-seller", "Продавец: " + phone.seller + " · " + phone.city);
+        addText(details, "div", "seller-rating", "★★★★★ 4,8 · 24 отзыва");
+        addText(details, "div", "product-condition", "Б/у · игровое объявление");
+        addText(details, "div", "product-price", formatMoney(phone.price));
+        if (phone.defect) {
+          const part = repairParts[phone.defect.part];
+          addText(details, "div", "product-problem", "Поломка: " + part.label.toLowerCase() + " · ремонт " + formatMoney(phone.defect.cost));
+        } else {
+          addText(details, "div", "product-condition", "Поломок нет");
+        }
+        addButton(details, "Подробнее", () => openListing(phone, source));
+        const isFavorite = state.favorites.includes(phone.id);
+        const favoriteButton = addText(details, "button", "favorite-toggle", isFavorite ? "♥ В избранном" : "☆ В избранное");
+        favoriteButton.type = "button";
+        favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+        favoriteButton.addEventListener("click", () => toggleFavorite(phone.id));
+        return card;
+      }
+
+      function renderListings(brand) {
+        productList.replaceChildren();
+        addText(productList, "div", "product-condition", "Цены объявлений сверены с OLX.kz на 29.10.2026; продавцы и поломки — игровые. Магазин покупает дешевле рынка.");
+        listings.filter((phone) => phone.brand === brand).forEach((phone) => {
+          productList.append(createPhoneCard(phone, false, "catalog"));
+        });
+      }
+
+      function renderFavorites() {
+        favoritesList.replaceChildren();
+        const favoriteListings = listings.filter((phone) => state.favorites.includes(phone.id));
+        if (!favoriteListings.length) {
+          addText(favoritesList, "div", "page-message", "Пока ничего нет. Добавь телефон в избранное из объявлений.");
+          return;
+        }
+        favoriteListings.forEach((phone) => {
+          favoritesList.append(createPhoneCard(phone, false, "favorites"));
+        });
+      }
+
+      function toggleFavorite(id) {
+        const index = state.favorites.indexOf(id);
+        if (index >= 0) state.favorites.splice(index, 1);
+        else state.favorites.push(id);
+        saveState();
+        if (activeView === "listing-details" && activeListing) {
+          renderListingDetails(activeListing);
+        } else if (activeView === "favorites") {
+          renderFavorites();
+        } else if (activeView === "announcements" && activeCategory) {
+          renderListings(activeCategory);
+        }
+        showNotice(index >= 0 ? "Телефон удалён из избранного" : "Телефон добавлен в избранное");
+      }
+
+      function showOnlyView(id, name) {
+        homeScreen.hidden = true;
+        views.forEach((view) => { view.hidden = view.id !== id; });
+        activeView = name;
+      }
+
+      function openListing(phone, source = "catalog") {
+        activeListing = phone;
+        activeListingSource = source;
+        renderListingDetails(phone);
+        showOnlyView("details-screen", "listing-details");
+      }
+
+      function renderListingDetails(phone) {
+        detailsHeaderTitle.textContent = phone.brand === "iphone" ? "iPhone"
+          : phone.brand === "samsung" ? "Samsung" : "Redmi";
+        detailsContent.replaceChildren();
+        const info = addText(detailsContent, "article", "details-card", "");
+        addText(info, "div", "details-name", phone.model);
+        addText(info, "div", "details-price", formatMoney(phone.price));
+        addText(info, "div", "seller-rating", "★★★★★ 4,8 из 5 · 24 отзыва");
+        addText(info, "div", "details-row", "Продавец: " + phone.seller + " · " + phone.city);
+        const storage = phone.model.match(/(?:\d+\/)?\d+\s*ГБ/i);
+        addText(info, "div", "details-row", "Память: " + (storage ? storage[0] : "указана в названии") + " · Состояние: б/у");
+        addText(info, "div", "details-row", "Поломки: " + (phone.defect
+          ? repairParts[phone.defect.part].label + " · ремонт " + formatMoney(phone.defect.cost)
+          : "не заявлены"));
+        const isFavorite = state.favorites.includes(phone.id);
+        const favoriteButton = addText(info, "button", "favorite-toggle", isFavorite ? "♥ Удалить из избранного" : "☆ В избранное");
+        favoriteButton.type = "button";
+        favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+        favoriteButton.addEventListener("click", () => toggleFavorite(phone.id));
+        addButton(info, "Написать продавцу", openSellerChat);
+        addText(detailsContent, "div", "section-label", "Отзывы о продавце");
+        for (const [author, text] of [
+          ["Алия · покупатель", "★★★★★ Всё как в объявлении, продавец ответил быстро."],
+          ["Данияр · покупатель", "★★★★☆ Договорились о встрече, телефон проверил на месте."]
+        ]) {
+          const review = addText(detailsContent, "article", "review-card", "");
+          addText(review, "div", "review-quote", text);
+          addText(review, "div", "review-author", author);
+        }
+      }
+
+      function appendChatBubble(kind, text) {
+        const bubble = addText(chatMessages, "div", "chat-bubble " + kind, text);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return bubble;
+      }
+
+      function openSellerChat() {
+        if (!activeListing) return;
+        document.querySelector("#chat-title").textContent = activeListing.seller;
+        chatMessages.replaceChildren();
+        chatControls.replaceChildren();
+        appendChatBubble("seller", "Здравствуйте! Вы смотрите объявление: " + activeListing.model + ".");
+        const send = addButton(chatControls, "Привет, хочу купить", () => {
+          send.disabled = true;
+          appendChatBubble("player", "Привет, хочу купить");
+          appendChatBubble("seller", "Привет! Да, телефон ещё есть. Можем договориться о встрече. Цена в объявлении: " + formatMoney(activeListing.price) + ".");
+          addButton(chatControls, "Купить телефон · " + formatMoney(activeListing.price), () => buyPhone(activeListing));
+        });
+        showOnlyView("chat-screen", "seller-chat");
+      }
+
+      function renderInventory() {
+        inventoryList.replaceChildren();
+        if (!state.owned.length) {
+          addText(inventoryList, "div", "page-message", "Пока нет телефонов. Купи объявление, чтобы начать.");
+          return;
+        }
+        state.owned.forEach((phone) => inventoryList.append(createPhoneCard(phone, true)));
+      }
+
+      function renderRepairs() {
+        repairList.replaceChildren();
+        const broken = state.owned.filter((phone) => phone.defect);
+        if (!broken.length) {
+          addText(repairList, "div", "page-message", state.owned.length
+            ? "Сломанных телефонов нет. Купи неисправный телефон в объявлениях."
+            : "Сначала купи телефон с поломкой в приложении «Объявления».");
+          return;
+        }
+        broken.forEach((phone) => {
+          const card = addText(repairList, "article", "repair-card", "");
+          const part = repairParts[phone.defect.part];
+          addText(card, "div", "repair-title", phone.model);
+          addText(card, "div", "repair-part", "Поломка: " + part.label.toLowerCase());
+          addText(card, "div", "repair-cost-note", "Стоимость ремонта: " + formatMoney(phone.defect.cost));
+          addButton(card, "Починить", () => repairPhone(phone.id));
+        });
+      }
+
+      function updateGame() {
+        updateBalance();
+        renderInventory();
+        renderRepairs();
+        if (activeCategory) renderListings(activeCategory);
+      }
+
+      function buyPhone(listing) {
+        if (state.balance < listing.price) {
+          showNotice("Не хватает денег. Нужно ещё " + formatMoney(listing.price - state.balance));
+          return;
+        }
+        const source = activeListingSource;
+        state.balance -= listing.price;
+        state.favorites = state.favorites.filter((id) => id !== listing.id);
+        state.owned.push({
+          ...listing,
+          id: listing.id + "-" + Date.now(),
+          purchasePrice: listing.price,
+          repairCostTotal: 0
+        });
+        saveState();
+        updateGame();
+        activeListing = null;
+        if (source === "favorites") {
+          renderFavorites();
+          showOnlyView("favorites-screen", "favorites");
+        } else if (activeCategory) {
+          showOnlyView("catalog-screen", "announcements");
+          categoryScreen.hidden = true;
+          productList.hidden = false;
+        } else {
+          goHome();
+        }
+        showNotice("Куплен: " + listing.model);
+      }
+
+      function repairPhone(id) {
+        const phone = state.owned.find((item) => item.id === id);
+        if (!phone || !phone.defect) return;
+        const cost = phone.defect.cost;
+        if (state.balance < cost) {
+          showNotice("Не хватает на ремонт. Нужно ещё " + formatMoney(cost - state.balance));
+          return;
+        }
+        state.balance -= cost;
+        phone.repairCostTotal = (phone.repairCostTotal || 0) + cost;
+        phone.defect = null;
+        saveState();
+        updateGame();
+        showNotice("Телефон починен за " + formatMoney(cost));
+      }
+
+      function phoneMarketValue(phone) {
+        return (phone.purchasePrice || phone.price) + (phone.repairCostTotal || 0);
+      }
+
+      function openSale(id) {
+        const phone = state.owned.find((item) => item.id === id);
+        if (!phone) return;
+        activeSalePhoneId = id;
+        renderSaleForm(phone);
+        showOnlyView("sale-screen", "sale");
+      }
+
+      function renderSaleForm(phone) {
+        const marketValue = phoneMarketValue(phone);
+        saleContent.replaceChildren();
+        const card = addText(saleContent, "article", "details-card", "");
+        addText(card, "div", "details-name", phone.model);
+        addText(card, "div", "details-row", "Покупка: " + formatMoney(phone.purchasePrice || phone.price));
+        addText(card, "div", "details-row", "Ремонт: " + formatMoney(phone.repairCostTotal || 0));
+        addText(card, "div", "details-price", "Рыночная цена: " + formatMoney(marketValue));
+        addText(card, "label", "sale-input-label", "Цена объявления · ₸");
+        const input = document.createElement("input");
+        input.className = "sale-price-input";
+        input.type = "number";
+        input.min = "1000";
+        input.step = "1000";
+        input.value = String(marketValue);
+        input.setAttribute("aria-label", "Цена продажи в тенге");
+        card.append(input);
+        addText(card, "div", "sale-hint", "Поставь на 10 000 ₸ выше рынка или дороже — покупатель не найдётся. Чем ближе цена к рынку, тем выше шанс продажи.");
+        addButton(card, "Найти покупателя", () => trySellPhone(phone.id, input.valueAsNumber));
+      }
+
+      function trySellPhone(id, askingPrice) {
+        const phone = state.owned.find((item) => item.id === id);
+        if (!phone) return;
+        if (!Number.isSafeInteger(askingPrice) || askingPrice < 1000) {
+          showNotice("Введи цену не меньше 1 000 ₸ целым числом.");
+          return;
+        }
+        const marketValue = phoneMarketValue(phone);
+        const markup = askingPrice - marketValue;
+        if (markup >= 10000) {
+          showNotice("Покупатель не найден: цена на 10 000 ₸ или больше выше рынка.");
+          return;
+        }
+        const buyerChance = markup > 0 ? (10000 - markup) / 10000 : 1;
+        if (Math.random() >= buyerChance) {
+          showNotice("Покупатель не согласился. Попробуй немного снизить цену.");
+          return;
+        }
+        const index = state.owned.indexOf(phone);
+        state.balance += askingPrice;
+        state.owned.splice(index, 1);
+        activeSalePhoneId = null;
+        saveState();
+        updateGame();
+        goHome();
+        showNotice("Покупатель найден! Телефон продан за " + formatMoney(askingPrice));
+      }
+
+      function stopCamera() {
+        if (cameraStream) {
+          cameraStream.getTracks().forEach((track) => track.stop());
+          cameraStream = null;
+        }
+        cameraVideo.srcObject = null;
+        cameraTake.disabled = true;
+      }
+
+      async function startCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          cameraStatus.textContent = "Камера недоступна: открой игру через HTTPS или localhost.";
+          return;
+        }
+        cameraStatus.textContent = "Запрашиваю доступ к камере…";
+        try {
+          stopCamera();
+          cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+          if (activeView !== "camera") {
+            cameraStream.getTracks().forEach((track) => track.stop());
+            cameraStream = null;
+            return;
+          }
+          cameraVideo.srcObject = cameraStream;
+          cameraVideo.hidden = false;
+          cameraPhoto.hidden = true;
+          cameraPlaceholder.hidden = true;
+          cameraTake.disabled = false;
+          cameraStatus.textContent = "Камера включена";
+        } catch (error) {
+          cameraStatus.textContent = "Не удалось включить камеру: " + error.message;
+        }
+      }
+
+      function takePhoto() {
+        if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
+          cameraStatus.textContent = "Камера ещё загружается. Попробуй через секунду.";
+          return;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = cameraVideo.videoWidth;
+        canvas.height = cameraVideo.videoHeight;
+        canvas.getContext("2d").drawImage(cameraVideo, 0, 0);
+        cameraPhoto.src = canvas.toDataURL("image/jpeg", .85);
+        cameraPhoto.hidden = false;
+        cameraStatus.textContent = "Снимок сделан";
+      }
+
+      const calc = { current: "0", stored: null, operation: null, reset: false };
+      const calcDisplay = document.querySelector("#calculator-display");
+      function pressCalculator(key) {
+        if (key === "clear") {
+          calc.current = "0"; calc.stored = null; calc.operation = null; calc.reset = false;
+        } else if (key === "sign") {
+          calc.current = String(Number(calc.current) * -1);
+        } else if (key === "percent") {
+          calc.current = String(Number(calc.current) / 100);
+        } else if (["+", "-", "×", "÷"].includes(key)) {
+          calc.stored = calc.current; calc.operation = key; calc.reset = true;
+        } else if (key === "=") {
+          if (!calc.operation || calc.stored === null) return;
+          const left = Number(calc.stored);
+          const right = Number(calc.current);
+          let result;
+          if (calc.operation === "+") result = left + right;
+          if (calc.operation === "-") result = left - right;
+          if (calc.operation === "×") result = left * right;
+          if (calc.operation === "÷") result = right === 0 ? NaN : left / right;
+          calc.current = Number.isFinite(result) ? String(Number(result.toFixed(6))) : "Ошибка";
+          calc.stored = null; calc.operation = null; calc.reset = true;
+        } else if (key === ".") {
+          if (calc.reset) { calc.current = "0"; calc.reset = false; }
+          if (!calc.current.includes(".")) calc.current += ".";
+        } else if (/^\d$/.test(key)) {
+          if (calc.current === "Ошибка" || calc.reset) { calc.current = key; calc.reset = false; }
+          else calc.current = calc.current === "0" ? key : calc.current + key;
+        }
+        if (calc.current.length > 12) calc.current = calc.current.slice(0, 12);
+        calcDisplay.textContent = calc.current;
+      }
+
+      function openApp(app) {
+        stopCamera();
+        homeScreen.hidden = true;
+        const targetId = app === "announcements" ? "catalog-screen" : app + "-screen";
+        views.forEach((view) => { view.hidden = view.id !== targetId; });
+        activeView = app;
+        if (app === "announcements") {
+          activeCategory = null;
+          categoryScreen.hidden = false;
+          productList.hidden = true;
+          catalogTitle.textContent = "Разделы";
+          catalogSubtitle.textContent = "Выбери марку · ₸ " + money.format(state.balance);
+        }
+        if (app === "inventory") renderInventory();
+        if (app === "repair") renderRepairs();
+        if (app === "favorites") renderFavorites();
+        if (app === "camera") {
+          cameraVideo.hidden = true;
+          cameraPhoto.hidden = true;
+          cameraPlaceholder.hidden = false;
+          cameraStatus.textContent = "Камера выключена";
+        }
+        if (app === "calculator") calcDisplay.textContent = calc.current;
+      }
+
+      function goHome() {
+        stopCamera();
+        views.forEach((view) => { view.hidden = true; });
+        homeScreen.hidden = false;
+        activeView = "home";
+      }
+
+      function goBack() {
+        if (activeView === "seller-chat") {
+          if (activeListing) openListing(activeListing, activeListingSource);
+          else goHome();
+          return;
+        }
+        if (activeView === "listing-details") {
+          if (activeListingSource === "favorites") {
+            renderFavorites();
+            showOnlyView("favorites-screen", "favorites");
+          } else if (activeCategory) {
+            showOnlyView("catalog-screen", "announcements");
+            categoryScreen.hidden = true;
+            productList.hidden = false;
+          } else {
+            goHome();
+          }
+          return;
+        }
+        if (activeView === "sale") {
+          activeSalePhoneId = null;
+          showOnlyView("inventory-screen", "inventory");
+          renderInventory();
+          return;
+        }
+        if (activeView === "announcements" && activeCategory) {
+          activeCategory = null;
+          productList.hidden = true;
+          categoryScreen.hidden = false;
+          catalogTitle.textContent = "Разделы";
+          catalogSubtitle.textContent = "Выбери марку · ₸ " + money.format(state.balance);
+          return;
+        }
+        goHome();
+      }
+
+      function showCategory(category) {
+        activeCategory = category;
+        categoryScreen.hidden = true;
+        productList.hidden = false;
+        catalogTitle.textContent = brandNames[category];
+        catalogSubtitle.textContent = "Объявления · ₸ " + money.format(state.balance);
+        renderListings(category);
+        productList.scrollTop = 0;
+      }
+
+      function openResetConfirmation() {
+        resetConfirm.hidden = false;
+        resetProgressCancel.focus();
+      }
+
+      function closeResetConfirmation() {
+        resetConfirm.hidden = true;
+        resetProgressOpen.focus();
+      }
+
+      function resetProgress() {
+        state = { balance: 50000, owned: [], favorites: [] };
+        activeCategory = null;
+        activeListing = null;
+        activeListingSource = "catalog";
+        activeSalePhoneId = null;
+        resetConfirm.hidden = true;
+        const saved = saveState();
+        updateGame();
+        goHome();
+        if (saved) showNotice("Прогресс сброшен. Новая игра началась!");
+      }
+
+      document.querySelectorAll("[data-open-app]").forEach((button) => {
+        button.addEventListener("click", () => openApp(button.dataset.openApp));
+      });
+      resetProgressOpen.addEventListener("click", openResetConfirmation);
+      resetProgressCancel.addEventListener("click", closeResetConfirmation);
+      resetProgressConfirm.addEventListener("click", resetProgress);
+      resetConfirm.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeResetConfirmation();
+      });
+      document.querySelectorAll(".app-back").forEach((button) => { button.addEventListener("click", goBack); });
+      document.querySelectorAll("[data-category]").forEach((button) => {
+        button.addEventListener("click", () => showCategory(button.dataset.category));
+      });
+      document.querySelector("#camera-start").addEventListener("click", startCamera);
+      document.querySelector("#camera-take").addEventListener("click", takePhoto);
+      document.querySelectorAll("[data-calc]").forEach((button) => {
+        button.addEventListener("click", () => pressCalculator(button.dataset.calc));
+      });
+      window.addEventListener("pagehide", stopCamera);
+
+      try {
+        const saved = localStorage.getItem("perekup-save-v3");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Number.isSafeInteger(parsed.balance) && parsed.balance >= 0 && Array.isArray(parsed.owned)) {
+            state.balance = parsed.balance;
+            state.favorites = Array.isArray(parsed.favorites)
+              ? parsed.favorites.filter((id) => typeof id === "string" && listings.some((listing) => listing.id === id))
+              : [];
+            state.owned = parsed.owned.filter((phone) =>
+              phone && typeof phone.id === "string"
+              && listings.some((listing) => listing.id === phone.id.split("-")[0])
+              && (!phone.defect || Boolean(repairParts[phone.defect.part]))
+            ).map((phone) => {
+              const listing = listings.find((item) => item.id === phone.id.split("-")[0]);
+              return {
+                ...listing,
+                ...phone,
+                purchasePrice: phone.purchasePrice || phone.price,
+                repairCostTotal: phone.repairCostTotal || 0,
+                resalePrice: undefined
+              };
+            });
+          } else {
+            showNotice("Сохранение не распознано. Начата новая игра.");
+          }
+        }
+      } catch (error) {
+        showNotice("Не удалось прочитать сохранение: " + error.message);
+      }
+      updateGame();
+    })();
+  </script>
+</body>
+</html>
